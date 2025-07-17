@@ -1,75 +1,467 @@
+import { images } from '@/constants/images';
+import { useTheme } from '@/context/useThemeContext';
+import { useTabBarHeight } from '@/hooks/useTabBarHeight';
+import { getResponse } from '@/services/openAI';
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Animated, Easing, FlatList, Keyboard, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Markdown from 'react-native-markdown-display';
+import ActionButton, { FloatingButton } from '../components/ui/Button';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function ChatScreen() {
+  const { colors } = useTheme();
+  const [query, setQuery] = useState<string>('');
+  const [isScreenTouched, setIsScreenTouched] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([]);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [streamingText, setStreamingText] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [isStreamPaused, setIsStreamPaused] = useState<boolean>(false);
+  const [typingAnim] = useState(new Animated.Value(0));
+  const [streamingAnim] = useState(new Animated.Value(0));
+  const flatListRef = useRef<FlatList>(null);
+  const [keyboardHeight] = useState(new Animated.Value(0));
+  const [inputContainerPadding] = useState(new Animated.Value(16));
+  const tabBarHeight = useTabBarHeight();
 
-export default function HomeScreen() {
+  // Streaming control refs/state
+  const cancelRef = useRef<{ current: boolean }>({ current: false });
+  const [streamingIndex, setStreamingIndex] = useState<number>(0);
+  const [responseText, setResponseText] = useState<string>('');
+  const [isAtBottom, setIsAtBottom] = useState<boolean>(true);
+
+  // Copy to clipboard function
+  const copyToClipboard = (text: string) => {
+    // For React Native, we'll use Alert for now since clipboard requires additional setup
+    Alert.alert(
+      "Copy Text",
+      "Text copied to clipboard",
+      [
+        { text: "OK", onPress: () => console.log("OK Pressed") }
+      ]
+    );
+    // In a real app, you'd use: Clipboard.setString(text);
+    console.log("Text to copy:", text);
+  };
+
+  // Helper to build OpenAI messages array from local state
+  function buildMessagesForAPI(messages: Array<{text: string, isUser: boolean}>, query?: string) {
+    const systemPrompt = {
+      role: 'system',
+      content: `Format your response using these Markdown rules:\n1. **Bold** text with **double asterisks**\n2. *Italic* text with *single asterisks*\n3. Links with [visible text](url)\n4. Lists with - or * bullets\n5. Headers with # symbols\n6. Code blocks with \
+\`\`\`\n7. Use markdown to format your response.\n8. Keep responses concise and mobile-friendly.\n9. Consider the user's theme and style when responding.`
+    };
+    const history = messages.map(m => ({
+      role: m.isUser ? 'user' : 'assistant',
+      content: m.text
+    }));
+    const arr = [systemPrompt, ...history];
+    if (query !== undefined) arr.push({ role: 'user', content: query });
+    return arr;
+  }
+
+  // Modify handleSend for streaming
+const handleSend = async () => {
+  if (query.trim()) {
+    const newMessage = { text: query, isUser: true };
+    setMessages([...messages, newMessage]);
+    setQuery('');
+    Keyboard.dismiss();
+
+    setIsScreenTouched(false);
+    setIsStreaming(true);
+    setStreamingText(''); // Reset for new response
+    setStreamingIndex(0);
+    setResponseText('');
+    cancelRef.current.current = false;
+
+    // Add empty AI message (will update dynamically)
+    setMessages(prev => [...prev, { text: '', isUser: false }]);
+
+    try {      
+      // Build full conversation for API
+      const apiMessages = buildMessagesForAPI([...messages, newMessage]);
+      // Get the full response first
+      const fullResponse = await getResponse(apiMessages);
+      setResponseText(fullResponse);
+      
+      // Now stream the response in chunks
+      const words = fullResponse.split(' ');
+      let currentWord = '';
+      
+      // Add initial delay to make typing indicator visible
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      for (let i = 0; i < words.length; i++) {
+        if (cancelRef.current.current) {
+          setStreamingIndex(i);
+          return;
+        }
+        currentWord += (i > 0 ? ' ' : '') + words[i];
+        setStreamingText(currentWord);
+        // Update the last message (AI response)
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1].text = currentWord;
+          return updated;
+        });
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      setStreamingIndex(words.length);
+    } catch (error) {
+      console.error('Streaming failed:', error);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = "Sorry, I'm having trouble connecting. Please check your internet connection and API key.";
+        return updated;
+      });
+    }
+    finally{
+      setIsStreaming(false);
+    }
+  }
+};
+
+const handleStopStreaming = () => {
+  cancelRef.current.current = true;
+  setIsStreamPaused(true)
+  setIsStreaming(false);
+};
+
+const handleResumeStreaming = async () => {
+  if (!responseText || streamingIndex >= responseText.split(' ').length) return;
+  setIsStreaming(true);
+  setIsStreamPaused(false);
+  cancelRef.current.current = false;
+  
+  try {
+    // Continue streaming from the stored full text (no new API call)
+    const words = responseText.split(' ');
+    let currentText = '';
+    
+    // Build the text from the beginning up to where we paused
+    for (let i = 0; i < streamingIndex; i++) {
+      currentText += (i > 0 ? ' ' : '') + words[i];
+    }
+    
+    // Now continue streaming from where we left off
+    for (let i = streamingIndex; i < words.length; i++) {
+      if (cancelRef.current.current) {
+        setStreamingIndex(i);
+        return;
+      }
+      currentText += (i > 0 ? ' ' : '') + words[i];
+      setStreamingText(currentText);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = currentText;
+        return updated;
+      });
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    setStreamingIndex(words.length);
+  } catch (error) {
+    setMessages(prev => {
+      const updated = [...prev];
+      updated[updated.length - 1].text = "Sorry, I'm having trouble connecting. Please check your internet connection and API key.";
+      return updated;
+    });
+  } finally {
+    setIsStreaming(false);
+  }
+};
+
+
+  useEffect(() => {
+    const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', (e) => {
+      const totalKeyboardHeight = e.endCoordinates.height - tabBarHeight;
+      
+      Animated.parallel([
+        Animated.timing(keyboardHeight, {
+          toValue: totalKeyboardHeight > 0 ? totalKeyboardHeight : 0,
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(inputContainerPadding, {
+          toValue: Platform.select({ ios: 0, android: 16 }) || 0,
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        })
+      ]).start();
+    });
+
+    const keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', () => {
+      Animated.parallel([
+        Animated.timing(keyboardHeight, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(inputContainerPadding, {
+          toValue: 16,
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        })
+      ]).start();
+    });
+
+    return () => {
+      keyboardWillShowSub.remove();
+      keyboardWillHideSub.remove();
+    };
+  }, [tabBarHeight]);
+
+
+  // Streaming text component with theme-aware styling
+  const MessageBubble = ({ text}: { text: string}) => {
+    return (
+      <TouchableOpacity
+        onLongPress={() => copyToClipboard(text)}
+        activeOpacity={0.7}
+        style={{ opacity: 1, borderRadius: 8 }}
+      >
+        <Animated.View style={{
+          opacity: 1,
+          borderRadius: 8,
+        }}>
+            <Markdown 
+              style={{
+                body: { color: colors.text, lineHeight: 24, fontSize: 14, fontFamily: 'Inter', marginBottom: 10 },
+                strong: { color: colors.text, fontWeight: 'bold', fontSize: 16, lineHeight: 24 },
+                em: { color: colors.text, fontStyle: 'italic', fontSize: 16, lineHeight: 24 },
+                link: { color: colors.primary },
+                list_item: { color: colors.text, fontSize: 16 },
+                bullet_list: { marginBottom: 10 },
+                ordered_list: { marginBottom: 10 },
+                bullet_list_icon: { 
+                  color: colors.primary, 
+                  fontSize: 26, 
+                  fontWeight: 'bold',
+                  marginRight: 8,
+                  marginTop: 2
+                },
+                ordered_list_icon: { 
+                  color: colors.primary, 
+                  fontSize: 26, 
+                  fontWeight: 'bold',
+                  marginRight: 8,
+                  marginTop: 2
+                },
+                paragraph: { marginBottom: 16, lineHeight: 20, fontSize: 16, fontFamily: 'Inter' },
+                image: { backgroundColor: colors.card, width: '100%', height: 200, resizeMode: 'contain', textDecorationColor: colors.text }
+              }}
+            >
+            {text}
+            </Markdown>
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
+  const handleChange = (text: string) => {
+    setQuery(text);
+  };
+
+  const renderMessage = ({ item, index }: { item: { text: string, isUser: boolean }, index: number }) => (
+    <View className={`mb-5 ${item.isUser ? 'ml-auto' : 'mr-auto'}`} style={{ maxWidth: '90%' }}>
+      {!item.isUser ? (
+        <View className='flex-row items-start'>
+          <View className='mr-1'>
+            <Image source={images.logo} style={{ width: 30, height: 30 }} />
+          </View>
+          <View style={{ backgroundColor: colors.background}} className='p-3 rounded-lg rounded-tl-none'>
+            {isStreaming && index === messages.length - 1 && item.text === '' ? (
+              <ActivityIndicator />
+            ) : (
+              <MessageBubble text={item.text} />
+            )}
+          </View>
+        </View>
+      ) : (
+        <TouchableOpacity
+          onLongPress={() => copyToClipboard(item.text)}
+          activeOpacity={0.7}
+        >
+          <View 
+            className='p-3 rounded-lg rounded-tr-none'
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Text style={{ color: 'white' }}>{item.text}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+    
+
+  const renderFooter = () => {
+    if (!isLoading) return null;
+    
+    return (
+      <View className='flex-row items-start mb-2 mr-auto max-w-[80%]'>
+        <View className='mr-2'>
+          <Image 
+            source={images.logo} 
+            style={{ width: 30, height: 30 }}
+            className='rounded-full'
+            contentFit='contain' 
+          />
+        </View>
+        <View 
+          className='p-3 rounded-lg rounded-tl-none'
+          style={{ backgroundColor: colors.card }}
+        >
+          <ActivityIndicator size="small" color={colors.text} />
+        </View>
+      </View>
+    );
+  };
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+    setIsFocused(false);
+  };
+
+  const scrollToBottom = () => {
+    if (flatListRef.current && messages.length > 0) {
+      flatListRef.current.scrollToEnd({ animated: true });
+      setIsScreenTouched(false);
+      setIsAtBottom(true); // Hide the button immediately
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <Animated.View style={{ 
+      flex: 1,
+      paddingBottom: keyboardHeight,
+      marginBottom: Platform.select({
+        ios: 0,
+        android: tabBarHeight // Only needed if Android doesn't handle it automatically
+      })
+    }}>
+      <Pressable className='flex-1 h-full' onPress={dismissKeyboard}>
+        <View className='flex-1' style={{ backgroundColor: colors.background }}>
+          {/* Main Content */}
+          {messages.length === 0 ? (
+            <View className='flex-1 items-center justify-center'>
+              <View className='flex-col items-center justify-center w-4/5'>
+                <Image 
+                  source={images.logo} 
+                  style={{ width: 100, height: 100 }}
+                  className='m-2 rounded-full'
+                  contentFit='contain' 
+                />
+              </View>
+              <Text className='text-sm m-1' style={{ color: colors.gray }}>
+                Ask me anything...
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              renderItem={renderMessage}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={{ padding: 16, paddingBottom: tabBarHeight ? tabBarHeight + 20 : 20 }}
+              keyboardShouldPersistTaps="handled"
+              scrollEventThrottle={16}
+              showsVerticalScrollIndicator={true}
+              ListFooterComponent={renderFooter}
+              windowSize={21}
+              onScrollBeginDrag={() => {
+                if (isStreaming) {
+                  setIsScreenTouched(true);
+                }
+              }}
+              onContentSizeChange={() => {
+                if (isStreaming && messages.length > 0 && !isScreenTouched) {
+                  flatListRef.current?.scrollToEnd({ animated: true });
+                }
+              }}
+              onScroll={(event) => {
+                const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+                const paddingToBottom = 130;
+                const isCloseToBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - paddingToBottom;
+                setIsAtBottom(isCloseToBottom);
+              }}
+            />
+          )}
+
+          {/* Scroll to Bottom Button */}
+          {!isAtBottom && (
+            <FloatingButton 
+              onPress={scrollToBottom}
+              buttonImage="↓"
+            />
+          )}
+
+          {/* Resume Button (floating) */}
+          {isStreamPaused && streamingIndex > 0 && streamingIndex < (responseText.split(' ').length || 0) && (
+            <FloatingButton 
+              onPress={handleResumeStreaming}
+              buttonImage="▶"
+            />
+          )}
+
+          {/* Input Container */}
+          
+          <Animated.View 
+            style={{ 
+              padding: 16,
+              marginBottom: 0,
+              backgroundColor: colors.background 
+            }}
+          >
+            <View 
+              className='flex-col rounded-lg p-2 mt-0'
+              style={{ backgroundColor: colors.border }}
+            >
+              <TextInput
+                autoFocus={isFocused}
+                placeholder='Message Qurius...'
+                className='p-2 w-full rounded-lg'
+                placeholderTextColor={colors.gray}
+                multiline={true}
+                numberOfLines={4}
+                style={{ color: colors.text }}
+                onChangeText={handleChange}
+                onSubmitEditing={handleSend}
+                value={query}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                editable={!isLoading && !isStreaming}
+              />
+              <View className='flex-row items-center justify-end w-full mt-2'>
+                  {isStreaming ? (
+                    <ActionButton 
+                      type='stop'
+                      query={query}
+                      isStreaming={isStreaming}
+                      handleStopStreaming={handleStopStreaming}
+                    />
+                  ) : (
+                    <ActionButton
+                      type='send'
+                      query={query}
+                      isStreaming={isStreaming}
+                      handleSend={handleSend}
+                    />
+                  )}
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+
+
