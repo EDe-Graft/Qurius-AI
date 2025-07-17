@@ -48,8 +48,9 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
   </a>
 </div>
 
+
 - **[React Native](https://reactnative.dev/)** (with Expo) — cross-platform mobile development  
-- **[TypeScript](https://www.typescriptlang.org/)** — type safety and maintainability  
+- **[TypeScript](https://www.typescriptlang.org/)** — for type safety and maintainability  
 - **[OpenAI API](https://platform.openai.com/docs/api-reference)** — natural language understanding and generation  
 - **[react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display)** — rich markdown rendering  
 - **[NativeWind](https://www.nativewind.dev/)** (Tailwind CSS for RN) — rapid, consistent styling  
@@ -80,7 +81,6 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 ---
 
 ## 📸 Screenshots
-
 
 <div align="center">
   <img src="./assets/images/loading-screen.jpeg" alt="loading Screen" width="250"/>
