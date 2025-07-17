@@ -5,10 +5,10 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 ---
 
 <div align="center">
-  <img src="./screenshots/1.png" alt="ChatBot Home" width="250"/>
-  <img src="./screenshots/2.png" alt="Chat Conversation" width="250"/>
-  <img src="./screenshots/3.png" alt="Dark Mode" width="250"/>
-  <!-- Add more screenshots as needed -->
+  <img src="./assets/images/loading-screen.jpeg" alt="loading Screen" width="250"/>
+  <img src="./assets/images/chat-conversation-dark.png" alt="Chat Conversation Dark" width="250"/>
+  <img src="./assets/images/chat-conversation-light.png" alt="Chat Conversation Light" width="250"/>
+  <img src="./assets/images/dark-mode-settings.png" alt="Settings Page" width="250"/>
 </div>
 
 ---
@@ -28,25 +28,43 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 ## 🛠️ Tools & Technologies
 
 <div align="center">
-  <img src="./assets/readme-icons/react-native.png" alt="React Native" width="40" title="React Native"/>
-  <img src="./assets/readme-icons/expo.png" alt="Expo" width="40" title="Expo"/>
-  <img src="./assets/readme-icons/typescript.png" alt="TypeScript" width="40" title="TypeScript"/>
-  <img src="./assets/readme-icons/openai.png" alt="OpenAI" width="40" title="OpenAI API"/>
-  <img src="./assets/readme-icons/markdown.png" alt="Markdown" width="40" title="Markdown Display"/>
-  <img src="./assets/readme-icons/tailwind.png" alt="NativeWind" width="40" title="NativeWind (Tailwind CSS for RN)"/>
-  <img src="./assets/readme-icons/expo-router.png" alt="Expo Router" width="40" title="Expo Router"/>
-  <img src="./assets/readme-icons/clipboard.png" alt="Clipboard API" width="40" title="Clipboard API"/>
-  <img src="./assets/readme-icons/github.png" alt="GitHub" width="40" title="GitHub"/>
+  <a href="https://reactnative.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/React%20Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native"/>
+  </a>
+  <a href="https://expo.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white" alt="Expo"/>
+  </a>
+  <a href="https://www.typescriptlang.org/" target="_blank">
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  </a>
+  <a href="https://platform.openai.com/docs/api-reference" target="_blank">
+    <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI API"/>
+  </a>
+  <a href="https://github.com/iamacup/react-native-markdown-display" target="_blank">
+    <img src="https://img.shields.io/badge/Markdown%20Display-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown Display"/>
+  </a>
+  <a href="https://www.nativewind.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/NativeWind-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="NativeWind"/>
+  </a>
+  <a href="https://docs.expo.dev/router/introduction/" target="_blank">
+    <img src="https://img.shields.io/badge/Expo%20Router-1B1F23?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Router"/>
+  </a>
+  <a href="https://reactnative.dev/docs/clipboard" target="_blank">
+    <img src="https://img.shields.io/badge/Clipboard%20API-808080?style=for-the-badge&logo=copy&logoColor=white" alt="Clipboard API"/>
+  </a>
+  <a href="https://github.com/" target="_blank">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
+  </a>
 </div>
 
-- **React Native** (with Expo) — cross-platform mobile development
-- **TypeScript** — type safety and maintainability
-- **OpenAI API** — natural language understanding and generation
-- **react-native-markdown-display** — rich markdown rendering
-- **NativeWind (Tailwind CSS for RN)** — rapid, consistent styling
-- **Expo Router** — file-based navigation
-- **Custom Hooks & Context** — for theme and tab bar management
-- **Clipboard API** — (optional) for copy-to-clipboard functionality
+- **[React Native](https://reactnative.dev/)** (with Expo) — cross-platform mobile development  
+- **[TypeScript](https://www.typescriptlang.org/)** — type safety and maintainability  
+- **[OpenAI API](https://platform.openai.com/docs/api-reference)** — natural language understanding and generation  
+- **[react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display)** — rich markdown rendering  
+- **[NativeWind](https://www.nativewind.dev/)** (Tailwind CSS for RN) — rapid, consistent styling  
+- **[Expo Router](https://docs.expo.dev/router/introduction/)** — file-based navigation  
+- **Custom Hooks & Context** — for theme and tab bar management  
+- **[Clipboard API](https://reactnative.dev/docs/clipboard)** — (optional) for copy-to-clipboard functionality  
 
 ---
 
@@ -72,12 +90,9 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 
 ## 📸 Screenshots
 
-<!-- Replace these with your actual screenshots -->
 
 <div align="center">
-  <img src="./assets/images/loading-screen.jpeg" alt="Loading Screen" width="250"/>
-  <img src="./assets/images/chat-conversation.png" alt="Chat Conversation Dark Mode" width="250"/>
-  <img src="./assets/images/dark-mode-settings.png" alt="Dark Mode Settings" width="250"/>
+  <img src="./assets/images/chat-streaming.png" alt="Text Streaming" width="250"/>
   <img src="./assets/images/copy-feature.png" alt="Copy Feature" width="250"/>
 </div>
 
