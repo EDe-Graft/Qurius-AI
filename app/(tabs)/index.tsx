@@ -2,13 +2,15 @@ import { images } from '@/constants/images';
 import { useTheme } from '@/context/useThemeContext';
 import { useTabBarHeight } from '@/hooks/useTabBarHeight';
 import { getResponse } from '@/services/openAI';
+import { useDrawerStatus } from '@react-navigation/drawer';
 import { Image } from 'expo-image';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Easing, FlatList, Keyboard, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import ActionButton, { FloatingButton } from '../components/ui/Button';
+import ActionButton, { FloatingButton } from '../_components/ui/Button';
 
 export default function ChatScreen() {
+  const drawerStatus = useDrawerStatus();
   const { colors } = useTheme();
   const [query, setQuery] = useState<string>('');
   const [isScreenTouched, setIsScreenTouched] = useState<boolean>(false);
@@ -347,7 +349,7 @@ const handleResumeStreaming = async () => {
       })
     }}>
       <Pressable className='flex-1 h-full' onPress={dismissKeyboard}>
-        <View className='flex-1' style={{ backgroundColor: colors.background }}>
+        <View className='flex-1' style={{ backgroundColor: drawerStatus === 'open' ? colors.border : colors.background}}>
           {/* Main Content */}
           {messages.length === 0 ? (
             <View className='flex-1 items-center justify-center'>
@@ -425,7 +427,7 @@ const handleResumeStreaming = async () => {
             >
               <TextInput
                 autoFocus={isFocused}
-                placeholder='Message Qurius...'
+                placeholder= {drawerStatus === 'open' ? '': 'Message Qurius...'}
                 className='p-2 w-full rounded-lg'
                 placeholderTextColor={colors.gray}
                 multiline={true}
