@@ -3,19 +3,20 @@ import { useTheme } from '@/context/useThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { useNavigation } from '@react-navigation/native';
+import React from 'react';
 
 import { Tabs, useRouter } from 'expo-router';
 import TabIcon from '../_components/ui/TabIcon';
 
 export default function TabsLayout() {
-  const { colors } = useTheme();
+  const { colors, toggleTheme, isDark } = useTheme();
   const router = useRouter();
   const navigation = useNavigation<DrawerNavigationProp<any>>();
 
   return (
     <Tabs
     screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerStyle: {backgroundColor: colors.background},
         headerTitleStyle: {color: colors.text},
         headerTintColor: colors.primary,
@@ -30,34 +31,24 @@ export default function TabsLayout() {
         <Tabs.Screen 
             name="index" 
             options={{ 
-            title: 'Chat',
-            tabBarIcon: ({focused}) => <TabIcon source={icons.chat} focused={focused} />, 
-            headerLeft: () => (
-              <Ionicons
-                name="menu"
-                size={24}
-                color={colors.text}
-                style={{ marginLeft: 16 }}
-                onPress={() => navigation.openDrawer()}
-              />
-            ),
+              title: 'Chat',
+              tabBarIcon: ({focused}) => <TabIcon source={icons.chat} focused={focused} />, 
             }} 
         />
-        
         <Tabs.Screen 
             name="settings"   
             options={{ 
             title: 'Settings',
             tabBarIcon: ({focused}) => <TabIcon source={icons.settings} focused={focused} />,
-            headerLeft: () => (
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={colors.text}
-                style={{ marginLeft: 16 }}
-                onPress={() => router.back()}
-              />
-            ),
+            // headerLeft: () => (
+            //   <Ionicons
+            //     name="arrow-back"
+            //     size={24}
+            //     color={colors.text}
+            //     style={{ marginLeft: 16 }}
+            //     onPress={() => router.back()}
+            //   />
+            // ),
             }} 
         />
     </Tabs>

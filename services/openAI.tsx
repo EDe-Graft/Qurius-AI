@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { OPEN_AI_CONFIG } from '@/lib/config';
 
 // Default values if environment variables are not set
-const API_URL = process.env.EXPO_PUBLIC_OPENAI_API_URL || 'https://openrouter.ai/api/v1';
-const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://localhost:8081';
+const API_URL = OPEN_AI_CONFIG.apiUrl;
+const API_KEY = OPEN_AI_CONFIG.apiKey;
+const BACKEND_URL = OPEN_AI_CONFIG.backendUrl;
 
 
 // Non-streaming version

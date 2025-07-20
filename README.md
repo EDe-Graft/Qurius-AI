@@ -83,10 +83,10 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="./assets/images/loading-screen.jpeg" alt="loading Screen" width="250"/>
+  <img src="./assets/images/chat-screen.png" alt="Chat Screen" width="250"/>
   <img src="./assets/images/chat-conversation-dark.png" alt="Chat Conversation Dark" width="250"/>
-  <img src="./assets/images/chat-conversation-light.png" alt="Chat Conversation Light" width="250"/>
-  <img src="./assets/images/dark-mode-settings.png" alt="Settings Page" width="250"/>
+  <img src="./assets/images/drawer-navigation.png" alt="Drawer" width="250"/>
+  <img src="./assets/images/settings.png" alt="Settings Page" width="250"/>
   <img src="./assets/images/chat-streaming.png" alt="Text Streaming" width="250"/>
   <img src="./assets/images/copy-feature.png" alt="Copy Feature" width="250"/>
 </div>

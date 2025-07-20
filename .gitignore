@@ -40,3 +40,23 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Expo shared assets
+.expo-shared/
+
+# Logs
+*.log
+
+# Test coverage
+coverage/
+
+# Android/iOS build outputs
+*.apk
+*.aab
+*.keystore
+*.xcuserstate
+*.xcworkspace
+
+# IDE/editor settings
+.idea/
+.vscode/
