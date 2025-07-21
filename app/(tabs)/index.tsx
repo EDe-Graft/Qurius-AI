@@ -4,14 +4,19 @@ import { useTabBarHeight } from '@/hooks/useTabBarHeight';
 import { getResponse } from '@/services/openAI';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Easing, FlatList, Keyboard, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import { useAuth } from '../../hooks/useAuth';
+import getMarkdownStyles from '../_components/format/Markdown';
 import ActionButton, { FloatingButton } from '../_components/ui/Button';
 
 export default function ChatScreen() {
   const drawerStatus = useDrawerStatus();
   const { colors } = useTheme();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [query, setQuery] = useState<string>('');
   const [isScreenTouched, setIsScreenTouched] = useState<boolean>(false);
   const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([]);
@@ -52,7 +57,7 @@ export default function ChatScreen() {
     const systemPrompt = {
       role: 'system',
       content: `Format your response using these Markdown rules:\n1. **Bold** text with **double asterisks**\n2. *Italic* text with *single asterisks*\n3. Links with [visible text](url)\n4. Lists with - or * bullets\n5. Headers with # symbols\n6. Code blocks with \
-\`\`\`\n7. Use markdown to format your response.\n8. Keep responses concise and mobile-friendly.\n9. Consider the user's theme and style when responding.`
+\`\`\`\n7. Use markdown to format your response.\n8. Keep responses concise and mobile-friendly.\n9. Consider the user's theme and style when responding .`
     };
     const history = messages.map(m => ({
       role: m.isUser ? 'user' : 'assistant',
@@ -178,6 +183,12 @@ const handleResumeStreaming = async () => {
 
 
   useEffect(() => {
+    if (!loading && user === null) {
+      router.replace('/sign-in');
+    }
+  }, [user, loading]);
+
+  useEffect(() => {
     const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', (e) => {
       const totalKeyboardHeight = e.endCoordinates.height - tabBarHeight;
       
@@ -233,33 +244,7 @@ const handleResumeStreaming = async () => {
           opacity: 1,
           borderRadius: 8,
         }}>
-            <Markdown 
-              style={{
-                body: { color: colors.text, lineHeight: 24, fontSize: 14, fontFamily: 'Inter', marginBottom: 10 },
-                strong: { color: colors.text, fontWeight: 'bold', fontSize: 16, lineHeight: 24 },
-                em: { color: colors.text, fontStyle: 'italic', fontSize: 16, lineHeight: 24 },
-                link: { color: colors.primary },
-                list_item: { color: colors.text, fontSize: 16 },
-                bullet_list: { marginBottom: 10 },
-                ordered_list: { marginBottom: 10 },
-                bullet_list_icon: { 
-                  color: colors.primary, 
-                  fontSize: 26, 
-                  fontWeight: 'bold',
-                  marginRight: 8,
-                  marginTop: 2
-                },
-                ordered_list_icon: { 
-                  color: colors.primary, 
-                  fontSize: 26, 
-                  fontWeight: 'bold',
-                  marginRight: 8,
-                  marginTop: 2
-                },
-                paragraph: { marginBottom: 16, lineHeight: 20, fontSize: 16, fontFamily: 'Inter' },
-                image: { backgroundColor: colors.card, width: '100%', height: 200, resizeMode: 'contain', textDecorationColor: colors.text }
-              }}
-            >
+            <Markdown style={getMarkdownStyles(colors) as any}>
             {text}
             </Markdown>
         </Animated.View>
@@ -272,13 +257,13 @@ const handleResumeStreaming = async () => {
   };
 
   const renderMessage = ({ item, index }: { item: { text: string, isUser: boolean }, index: number }) => (
-    <View className={`mb-5 ${item.isUser ? 'ml-auto' : 'mr-auto'}`} style={{ maxWidth: '90%' }}>
+    <View className={`mb-5 ${item.isUser ? 'ml-auto' : 'mr-auto'}`} style={{ maxWidth: 'auto' }}>
       {!item.isUser ? (
         <View className='flex-row items-start'>
-          <View className='mr-1'>
+          {/* <View className='mr-1'>
             <Image source={images.logo} style={{ width: 30, height: 30 }} />
-          </View>
-          <View style={{ backgroundColor: colors.background}} className='p-3 rounded-lg rounded-tl-none'>
+          </View> */}
+          <View style={{ backgroundColor: colors.background}} className='p-2 rounded-lg rounded-tl-none'>
             {isStreaming && index === messages.length - 1 && item.text === '' ? (
               <ActivityIndicator />
             ) : (
@@ -289,7 +274,7 @@ const handleResumeStreaming = async () => {
       ) : (
         <TouchableOpacity
           onLongPress={() => copyToClipboard(item.text)}
-          activeOpacity={0.7}
+          activeOpacity={1}
         >
           <View 
             className='p-3 rounded-lg rounded-tr-none'

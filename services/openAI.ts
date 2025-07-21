@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { OPEN_AI_CONFIG } from '@/lib/config';
+import axios from 'axios';
 
 // Default values if environment variables are not set
 const API_URL = OPEN_AI_CONFIG.apiUrl;
@@ -15,7 +15,7 @@ export const getResponse = async (messages: Array<{ role: string; content: strin
     }
 
     const response = await axios.post(`${API_URL}/chat/completions`, {
-      model: "deepseek/deepseek-chat-v3-0324:free",
+      model: "qwen/qwq-32b:free",
       messages,
       stream: false,
     }, {
@@ -30,7 +30,7 @@ export const getResponse = async (messages: Array<{ role: string; content: strin
 
     return response.data.choices[0]?.message?.content || "No response received.";
   } catch (error: any) {
-    console.error('API Error:', error);
+    console.error('Open API Error:', error);
     
     if (error.response) {
       // Server responded with error status

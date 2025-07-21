@@ -4,9 +4,11 @@ import { DatabaseService } from '@/services/database';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
+  const router = useRouter();
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export default function SettingsScreen() {
 
   const handleSignOut = async () => {
     await signOut();
+    router.replace("/sign-in")
   };
 
   const handleClearHistory = async () => {
