@@ -33,6 +33,7 @@ export interface Database {
           user_id: string
           content: string
           role: 'user' | 'assistant'
+          conversation_id?: string | null
           created_at: string
         }
         Insert: {
@@ -40,6 +41,7 @@ export interface Database {
           user_id: string
           content: string
           role: 'user' | 'assistant'
+          conversation_id?: string | null
           created_at?: string
         }
         Update: {
@@ -47,6 +49,27 @@ export interface Database {
           user_id?: string
           content?: string
           role?: 'user' | 'assistant'
+          conversation_id?: string | null
+          created_at?: string
+        }
+      }
+      conversations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
           created_at?: string
         }
       }

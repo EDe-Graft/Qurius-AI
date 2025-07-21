@@ -4,11 +4,12 @@ import { useTabBarHeight } from '@/hooks/useTabBarHeight';
 import { getResponse } from '@/services/openAI';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Easing, FlatList, Keyboard, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { useAuth } from '../../hooks/useAuth';
+import { DatabaseService } from '../../services/database';
 import getMarkdownStyles from '../_components/format/Markdown';
 import ActionButton, { FloatingButton } from '../_components/ui/Button';
 
@@ -17,6 +18,7 @@ export default function ChatScreen() {
   const { colors } = useTheme();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [query, setQuery] = useState<string>('');
   const [isScreenTouched, setIsScreenTouched] = useState<boolean>(false);
   const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([]);
@@ -31,6 +33,7 @@ export default function ChatScreen() {
   const [keyboardHeight] = useState(new Animated.Value(0));
   const [inputContainerPadding] = useState(new Animated.Value(16));
   const tabBarHeight = useTabBarHeight();
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   // Streaming control refs/state
   const cancelRef = useRef<{ current: boolean }>({ current: false });
@@ -71,6 +74,19 @@ export default function ChatScreen() {
   // Modify handleSend for streaming
 const handleSend = async () => {
   if (query.trim()) {
+    // If no conversationId, create a new conversation
+    let convId = conversationId;
+    if (!convId && user) {
+      const conversation = await DatabaseService.addConversation(user.id, query.trim().slice(0, 32));
+      if (conversation && conversation.id) {
+        convId = conversation.id;
+        setConversationId(convId);
+      }
+    }
+    // Add user message to DB
+    if (user && convId) {
+      await DatabaseService.addMessage(user.id, query.trim(), 'user', convId);
+    }
     const newMessage = { text: query, isUser: true };
     setMessages([...messages, newMessage]);
     setQuery('');
@@ -93,6 +109,11 @@ const handleSend = async () => {
       const fullResponse = await getResponse(apiMessages);
       setResponseText(fullResponse);
       
+      // Add assistant message to DB
+      if (user && convId) {
+        await DatabaseService.addMessage(user.id, fullResponse, 'assistant', convId);
+      }
+
       // Now stream the response in chunks
       const words = fullResponse.split(' ');
       let currentWord = '';
@@ -188,6 +209,34 @@ const handleResumeStreaming = async () => {
     }
   }, [user, loading]);
 
+
+  useEffect(() => {
+    // If chatId param is present, load that conversation's messages
+    const chatId = params.chatId as string | undefined;
+    if (chatId && user) {
+      setConversationId(chatId);
+      DatabaseService.getMessagesByConversationId(chatId).then(dbMessages => {
+        // Convert DB messages to local format
+        const formatted = dbMessages.map(m => ({ text: m.content, isUser: m.role === 'user' }));
+        setMessages(formatted);
+        // Scroll to bottom after loading messages
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }, 100);
+      });
+    }
+  }, [params.chatId, user]);
+
+  // Scroll to bottom on initial mount or when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 100);
+    }
+  }, [messages.length]);
+
+  
   useEffect(() => {
     const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', (e) => {
       const totalKeyboardHeight = e.endCoordinates.height - tabBarHeight;

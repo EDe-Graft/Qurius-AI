@@ -5,6 +5,7 @@ import { Drawer } from 'expo-router/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import 'react-native-url-polyfill/auto';
+import CustomDrawerContent from './_components/custom/CustomDrawerContent';
 import './global.css';
 
 function ThemedDrawer() {
@@ -12,6 +13,7 @@ function ThemedDrawer() {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <Drawer
+        drawerContent={props => <CustomDrawerContent {...props} />}
         screenOptions={({ navigation }) => ({
           headerShown: true,
           drawerStyle: { backgroundColor: colors.background },

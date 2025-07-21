@@ -1,18 +1,23 @@
 # <img src="./assets/readme-icons/qurius-animated.gif" alt="Qurius ChatBot" width="48" style="vertical-align:middle;"/> Qurius ChatBot 🤖
 
-A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native and Expo.
+A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native, Expo, and Supabase.
 
 ---
 
 ## ✨ Features
 
 - **Conversational AI**: Chat with an intelligent assistant powered by OpenAI's GPT models.
+- **Multi-Conversation Support**: Organize your chats into separate conversations, each with its own history and title.
+- **Persistent Chat History**: All conversations and messages are stored securely in Supabase, so you never lose your chat history.
+- **Authentication**: Secure sign-in and sign-up with Supabase Auth.
+- **Profile Management**: Edit your profile, including avatar image upload (with Expo Image Picker and Supabase Storage).
 - **Markdown Support**: AI responses are beautifully formatted with Markdown (code, lists, links, etc.).
 - **Streaming Responses**: Watch the AI type out its answers in real time, just like a real conversation.
 - **Copy on Long Press**: Long-press any message (AI or user) to copy its text instantly.
 - **Theme Awareness**: Fully supports light and dark mode, adapting to your device's theme.
 - **Mobile-First UI**: Designed for a seamless, modern mobile experience with smooth animations and intuitive gestures.
-- **Persistent Chat History**: (Optional) Easily extend to store and retrieve past conversations.
+- **Drawer Navigation**: Professional, theme-aware drawer with search, new chat, and sign out.
+- **Error Handling**: Graceful error messages for network/API issues, ensuring a robust user experience.
 
 ---
 
@@ -31,6 +36,9 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
   <a href="https://platform.openai.com/docs/api-reference" target="_blank">
     <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI API"/>
   </a>
+  <a href="https://supabase.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
+  </a>
   <a href="https://github.com/iamacup/react-native-markdown-display" target="_blank">
     <img src="https://img.shields.io/badge/Markdown%20Display-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown Display"/>
   </a>
@@ -43,18 +51,22 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
   <a href="https://reactnative.dev/docs/clipboard" target="_blank">
     <img src="https://img.shields.io/badge/Clipboard%20API-808080?style=for-the-badge&logo=copy&logoColor=white" alt="Clipboard API"/>
   </a>
+  <a href="https://docs.expo.dev/versions/latest/sdk/imagepicker/" target="_blank">
+    <img src="https://img.shields.io/badge/Expo%20Image%20Picker-1B1F23?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Image Picker"/>
+  </a>
   <a href="https://github.com/" target="_blank">
     <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
   </a>
 </div>
 
-
 - **[React Native](https://reactnative.dev/)** (with Expo) — cross-platform mobile development  
 - **[TypeScript](https://www.typescriptlang.org/)** — for type safety and maintainability  
 - **[OpenAI API](https://platform.openai.com/docs/api-reference)** — natural language understanding and generation  
+- **[Supabase](https://supabase.com/)** — authentication, database (PostgreSQL), and storage for user profiles, conversations, and messages  
 - **[react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display)** — rich markdown rendering  
 - **[NativeWind](https://www.nativewind.dev/)** (Tailwind CSS for RN) — rapid, consistent styling  
 - **[Expo Router](https://docs.expo.dev/router/introduction/)** — file-based navigation  
+- **[Expo Image Picker](https://docs.expo.dev/versions/latest/sdk/imagepicker/)** — for user avatar/profile image upload  
 - **Custom Hooks & Context** — for theme and tab bar management  
 - **[Clipboard API](https://reactnative.dev/docs/clipboard)** — (optional) for copy-to-clipboard functionality  
 
@@ -83,12 +95,11 @@ A beautiful, blazing-fast, mobile-first AI chatbot app built with React Native a
 ## 📸 Screenshots
 
 <div align="center">
+  <img src="./assets/images/sign-in.png" alt="Sign In" width="250"/>
   <img src="./assets/images/chat-screen.png" alt="Chat Screen" width="250"/>
-  <img src="./assets/images/chat-conversation-dark.png" alt="Chat Conversation Dark" width="250"/>
   <img src="./assets/images/drawer-navigation.png" alt="Drawer" width="250"/>
+  <img src="./assets/images/chat-conversation.png" alt="Chat Conversation" width="250"/>
   <img src="./assets/images/settings.png" alt="Settings Page" width="250"/>
-  <img src="./assets/images/chat-streaming.png" alt="Text Streaming" width="250"/>
-  <img src="./assets/images/copy-feature.png" alt="Copy Feature" width="250"/>
 </div>
 
 ---

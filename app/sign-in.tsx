@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useDrawerStatus } from '@react-navigation/drawer';
 import React, { useState } from 'react';
 import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { images } from '../constants/images';
@@ -25,6 +26,7 @@ export const options = {
 
 export default function SignInScreen() {
   const { colors } = useTheme();
+  const drawerStatus = useDrawerStatus();
   const { signIn, signUp } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -70,10 +72,10 @@ export default function SignInScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} >
       <KeyboardAvoidingView
         className="flex-1 justify-center items-center px-6"
-        style={{ backgroundColor: colors.background }}
+        style={{backgroundColor: drawerStatus === 'open' ? colors.border : colors.background}}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View className="items-center mb-10">

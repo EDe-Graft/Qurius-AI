@@ -1,4 +1,5 @@
 import { useTheme } from '@/context/useThemeContext';
+import { useDrawerStatus } from '@react-navigation/drawer';
 import { useAuth } from '@/hooks/useAuth';
 import { DatabaseService } from '@/services/database';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +10,7 @@ import { ActivityIndicator, Alert, Image, Keyboard, StyleSheet, Switch, Text, Te
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
+  const drawerStatus = useDrawerStatus();
   const router = useRouter();
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
@@ -87,7 +89,7 @@ export default function SettingsScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="flex-1 px-6 py-8" style={{ backgroundColor: colors.background }}>
+      <View className="flex-1 px-6 py-8" style={{backgroundColor: drawerStatus === 'open' ? colors.border : colors.background}}>
         {/* Profile Section */}
         <View className="items-center mb-8">
           <TouchableOpacity
