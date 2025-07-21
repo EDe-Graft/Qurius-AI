@@ -137,4 +137,4 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
-> _Built using React Native, Expo, and OpenAI._
+> _Built using React Native, Expo, OpenAI and Supabase._
