@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, Tex
 import { images } from '../constants/images';
 import { useTheme } from '../context/useThemeContext';
 import { useAuth } from '../hooks/useAuth';
+import { DatabaseService } from '../services/database';
 
 export const options = {
   headerRight: () => {
@@ -51,7 +52,15 @@ export default function SignInScreen() {
       return;
     }
     setSubmitting(true);
-    const { error } = await signUp(email.trim(), password);
+    const { error, user } = await signUp(email.trim(), password);
+    if (!error && user) {
+      await DatabaseService.createProfile({
+        id: user.id,
+        email: user.email ?? '',
+        full_name: '',
+        avatar_url: ''
+      });
+    }
     if (error) setError(error.message || 'Sign up failed');
     else {
       setSuccess(true);

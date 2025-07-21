@@ -2,9 +2,10 @@ import { useTheme } from '@/context/useThemeContext';
 import { useAuth } from '@/hooks/useAuth';
 import { DatabaseService } from '@/services/database';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Keyboard, StyleSheet, Switch, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -55,6 +56,27 @@ export default function SettingsScreen() {
     ]);
   };
 
+  const handlePickImage = async () => {
+    // Ask for permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Permission to access media library is required!');
+      return;
+    }
+    // Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setAvatarUrl(uri);
+      setEditing(true); // Optionally enter edit mode
+    }
+  };
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
@@ -64,79 +86,91 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View className="flex-1 px-6 py-8" style={{ backgroundColor: colors.background }}>
-      {/* Profile Section */}
-      <View className="items-center mb-8">
-        <View style={{ borderRadius: 48, overflow: 'hidden', borderWidth: 2, borderColor: colors.primary, marginBottom: 12 }}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96 }} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View className="flex-1 px-6 py-8" style={{ backgroundColor: colors.background }}>
+        {/* Profile Section */}
+        <View className="items-center mb-8">
+          <TouchableOpacity
+            onPress={handlePickImage}
+            activeOpacity={0.7}
+            style={{ borderRadius: 48, overflow: 'hidden', borderWidth: 2, borderColor: colors.primary, marginBottom: 12 }}
+          >
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96 }} />
+            ) : (
+              <Ionicons name="person-circle" size={96} color={colors.gray} />
+            )}
+            {editing ? null : (
+              <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: colors.primary, borderRadius: 12, padding: 4 }}>
+                <Ionicons name="pencil" size={18} color="#fff" />
+              </View>
+            )}
+          </TouchableOpacity>
+          {editing ? (
+            <>
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
+                placeholder="Full Name"
+                placeholderTextColor={colors.gray}
+                value={fullName}
+                onChangeText={setFullName}
+              />
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
+                placeholder="Avatar URL"
+                placeholderTextColor={colors.gray}
+                value={avatarUrl}
+                onChangeText={setAvatarUrl}
+              />
+              <View className="flex-row mt-2">
+                <TouchableOpacity onPress={handleSave} style={[styles.saveBtn, { backgroundColor: colors.primary }]} disabled={saving}>
+                  <Text style={{ color: colors.background, fontWeight: 'bold' }}>{saving ? 'Saving...' : 'Save'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setEditing(false)} style={[styles.cancelBtn, { borderColor: colors.primary }]}> 
+                  <Text style={{ color: colors.primary }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </>
           ) : (
-            <Ionicons name="person-circle" size={96} color={colors.gray} />
+            <>
+              <Text style={[styles.name, { color: colors.text }]}>{profile?.full_name || 'No Name'}</Text>
+              <Text style={[styles.email, { color: colors.gray }]}>{profile?.email}</Text>
+              <TouchableOpacity onPress={() => setEditing(true)} style={[styles.editBtn, { borderColor: colors.primary }]}> 
+                <Ionicons name="pencil" size={16} color={colors.primary} />
+                <Text style={{ color: colors.primary, marginLeft: 4 }}>Edit Profile</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
-        {editing ? (
-          <>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
-              placeholder="Full Name"
-              placeholderTextColor={colors.gray}
-              value={fullName}
-              onChangeText={setFullName}
-            />
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
-              placeholder="Avatar URL"
-              placeholderTextColor={colors.gray}
-              value={avatarUrl}
-              onChangeText={setAvatarUrl}
-            />
-            <View className="flex-row mt-2">
-              <TouchableOpacity onPress={handleSave} style={[styles.saveBtn, { backgroundColor: colors.primary }]} disabled={saving}>
-                <Text style={{ color: colors.background, fontWeight: 'bold' }}>{saving ? 'Saving...' : 'Save'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setEditing(false)} style={[styles.cancelBtn, { borderColor: colors.primary }]}> 
-                <Text style={{ color: colors.primary }}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <>
-            <Text style={[styles.name, { color: colors.text }]}>{profile?.full_name || 'No Name'}</Text>
-            <Text style={[styles.email, { color: colors.gray }]}>{profile?.email}</Text>
-            <TouchableOpacity onPress={() => setEditing(true)} style={[styles.editBtn, { borderColor: colors.primary }]}> 
-              <Ionicons name="pencil" size={16} color={colors.primary} />
-              <Text style={{ color: colors.primary, marginLeft: 4 }}>Edit Profile</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
 
-      {/* Settings Section */}
-      <View className="mb-8">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text style={[styles.settingText, { color: colors.text }]}>Dark Mode</Text>
-          <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            trackColor={{ false: '#767577', true: colors.primary }}
-            thumbColor={isDark ? colors.primary : colors.gray}
-          />
+        {/* Settings Section */}
+        <View className="mb-8">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text style={[styles.settingText, { color: colors.text }]}>Dark Mode</Text>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#767577', true: colors.primary }}
+              thumbColor={isDark ? colors.primary : colors.gray}
+            />
+          </View>
+          {/* Add more settings here if needed */}
         </View>
-        {/* Add more settings here if needed */}
-      </View>
 
-      {/* Actions Section */}
-      <View>
-        <TouchableOpacity onPress={handleClearHistory} style={[styles.actionBtn, { backgroundColor: colors.card }]}> 
-          <Ionicons name="trash" size={18} color={colors.primary} />
-          <Text style={{ color: colors.primary, marginLeft: 8 }}>Clear Chat History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSignOut} style={[styles.actionBtn, { backgroundColor: colors.card, marginTop: 12 }]}> 
-          <Ionicons name="log-out" size={18} color={colors.primary} />
-          <Text style={{ color: colors.primary, marginLeft: 8 }}>Sign Out</Text>
-        </TouchableOpacity>
+        {/* Actions Section */}
+        <View>
+          <TouchableOpacity onPress={handleClearHistory} style={[styles.actionBtn, { backgroundColor: colors.card }]}> 
+            <Ionicons name="trash" size={18} color={colors.primary} />
+            <Text style={{ color: colors.primary, marginLeft: 8 }}>Clear Chat History</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSignOut} style={[styles.actionBtn, { backgroundColor: colors.card, marginTop: 12 }]}> 
+            <Ionicons name="log-out" size={18} color={colors.primary} />
+            <Text style={{ color: colors.primary, marginLeft: 8 }}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
+
   );
 }
 

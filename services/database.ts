@@ -37,6 +37,20 @@ export class DatabaseService {
     return data
   }
 
+  static async createProfile(profile: Partial<Profile>): Promise<Profile | null> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert(profile)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating profile:', error);
+      return null;
+    }
+    return data;
+  }
+
   // Message operations
   static async getMessages(userId: string, limit = 50): Promise<Message[]> {
     const { data, error } = await supabase
